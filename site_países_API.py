@@ -2,7 +2,7 @@ import streamlit as st
 import requests 
 
 st.title("INFOWORLD 🌍")
-st.subheader ("Descubra informações sobre o país que 
+st.subheader (" Descubra informações sobre o país que 
 você deseja pesquisar 🗺️")
 
 
@@ -44,4 +44,5 @@ if pais:
 else:
 
     st.info("Digite o nome de um país acima para começar.")
+
 
