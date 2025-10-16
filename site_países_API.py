@@ -2,10 +2,11 @@ import streamlit as st
 import requests 
 
 st.title("INFOWORLD 🌍")
-st.subheader ("Descubra informações sobre o país desejado 😁🗺️")
+st.subheader ("Descubra informações sobre o país que 
+você deseja pesquisar 🗺️")
 
 
-pais = st.text_input("Digite o nome de um país:", placeholder="Exemplo: Brazil, Japan, Germany...")
+pais = st.text_input("Digite o nome de um país (em ingles):", placeholder="Exemplo: Brazil, Japan, Germany...")
 
 # Quando o usuário digitar algo
 if pais:
@@ -43,3 +44,4 @@ if pais:
 else:
 
     st.info("Digite o nome de um país acima para começar.")
+
