@@ -2,8 +2,8 @@ import streamlit as st
 import requests 
 
 st.title("INFOWORLD 🌍")
-st.subheader (" Descubra informações sobre o país que 
-você deseja pesquisar 🗺️")
+st.subheader("Descubra informações sobre o país que você deseja pesquisar 🗺️")
+
 
 
 pais = st.text_input("Digite o nome de um país (em ingles):", placeholder="Exemplo: Brazil, Japan, Germany...")
