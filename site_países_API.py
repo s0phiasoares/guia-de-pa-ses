@@ -5,11 +5,11 @@ st.title("INFOWORLD 🌍")
 st.subheader ("Descubra informações sobre o país desejado 😁🗺️")
 
 
-país = st.text_input("Digite o nome de um país:", placeholder="Exemplo: Brazil, Japan, Germany...")
+pais = st.text_input("Digite o nome de um país:", placeholder="Exemplo: Brazil, Japan, Germany...")
 
 # Quando o usuário digitar algo
-if país:
-    resposta = requests.get("https://restcountries.com/v3.1/name/{país}")
+if pais:
+    resposta = requests.get(f"https://restcountries.com/v3.1/name/{pais}")
 
     if resposta.status_code == 200:
         dados = resposta.json()
@@ -41,4 +41,5 @@ if país:
     else:
         st.error("❌ País não encontrado. Verifique o nome e tente novamente.")
 else:
+
     st.info("Digite o nome de um país acima para começar.")
