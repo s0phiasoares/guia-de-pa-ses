@@ -103,7 +103,8 @@ if st.button("🔍 Buscar País"):
                 {
                     "lat": [lat],
                     "lon": [lng]
-                }
+                },
+                zoom= 7
             )
 
     except requests.exceptions.Timeout:
