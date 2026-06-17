@@ -8,6 +8,10 @@ st.set_page_config(
     layout="centered"
 )
 
+chave_api = st.secrets.get("PAIS_API")
+
+
+
 st.title("INFOWORLD 🌍")
 st.subheader("Descubra informações sobre qualquer país 🗺️")
 
@@ -27,9 +31,11 @@ if st.button("🔍 Buscar País"):
         with st.spinner("Buscando informações..."):
 
             resposta = requests.get(
-                f"https://restcountries.com/v3.1/name/{pais.strip()}",
-                timeout=10
+            'https://api.restcountries.com/countries/v5?q=canada',
+            headers={'Authorization': f"Bearer {chave_api}"}, timeout=10
             )
+
+
 
         if resposta.status_code != 200:
             st.error("❌ País não encontrado.")
