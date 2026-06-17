@@ -31,7 +31,7 @@ if st.button("🔍 Buscar País"):
         with st.spinner("Buscando informações..."):
 
             resposta = requests.get(
-            'https://api.restcountries.com/countries/v5?q=canada',
+            f"https://api.restcountries.com/countries/v5?q={pais}",
             headers={'Authorization': f"Bearer {chave_api}"}, timeout=10
             )
 
@@ -48,7 +48,7 @@ if st.button("🔍 Buscar País"):
             st.error("❌ País não encontrado.")
             st.stop()
 
-        pais_dados = dados[0]
+        pais_dados = dados.get("data").get("objects")[0]
 
         nome = pais_dados.get("name", {}).get("common", "N/A")
         emoji = pais_dados.get("flag", "")
