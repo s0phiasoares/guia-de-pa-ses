@@ -1,94 +1,117 @@
+```python
 import streamlit as st
 import requests
 
-st.title("INFOWORLD 🌍")
-st.subheader("Descubra informações sobre o país que você deseja pesquisar 🗺️")
+st.set_page_config(
+    page_title="INFOWORLD",
+    page_icon="🌍",
+    layout="centered"
+)
 
-# Entrada de texto
+st.title("INFOWORLD 🌍")
+st.subheader("Descubra informações sobre qualquer país 🗺️")
+
+# Campo de pesquisa
 pais = st.text_input(
     "Digite o nome de um país (em inglês):",
     placeholder="Exemplo: Brazil, Japan, Germany..."
 )
 
-# Botão para buscar
 if st.button("🔍 Buscar País"):
-    if pais:
-        pais = pais.strip()
 
-        try:
-            with st.spinner("Buscando informações..."):
-                resposta = requests.get(
-                    f"https://restcountries.com/v3.1/name/{pais},
-                    timeout=10
-                )
+    if not pais.strip():
+        st.warning("⚠️ Digite o nome de um país.")
+        st.stop()
 
-            if resposta.status_code == 200:
-                dados = resposta.json()
+    try:
+        with st.spinner("Buscando informações..."):
 
-                # Verifica se a resposta é uma lista válida
-                if isinstance(dados, list) and len(dados) > 0:
+            resposta = requests.get(
+                f"https://restcountries.com/v3.1/name/{pais.strip()}",
+                timeout=10
+            )
 
-                    pais_dados = dados[0]
+        if resposta.status_code != 200:
+            st.error("❌ País não encontrado.")
+            st.stop()
 
-                    nome = pais_dados.get("name", {}).get("common", "N/A")
-                    capital = ", ".join(
-                        pais_dados.get("capital", ["N/A"])
-                    )
-                    regiao = pais_dados.get("region", "N/A")
-                    subregiao = pais_dados.get("subregion", "N/A")
+        dados = resposta.json()
 
-                    populacao = f"{pais_dados.get('population', 0):,}".replace(",", ".")
-                    area = f"{pais_dados.get('area', 0):,}".replace(",", ".")
+        # Garante que a API retornou uma lista válida
+        if not isinstance(dados, list) or len(dados) == 0:
+            st.error("❌ País não encontrado.")
+            st.stop()
 
-                    bandeira = pais_dados.get("flags", {}).get("png", "")
+        pais_dados = dados[0]
 
-                    currencies = pais_dados.get("currencies", {})
-                    moedas = ", ".join(
-                        [
-                            f"{info.get('name', codigo)} ({codigo})"
-                            for codigo, info in currencies.items()
-                        ]
-                    ) or "N/A"
+        nome = pais_dados.get("name", {}).get("common", "N/A")
+        emoji = pais_dados.get("flag", "")
 
-                    idiomas = ", ".join(
-                        pais_dados.get("languages", {}).values()
-                    ) or "N/A"
+        capital = ", ".join(
+            pais_dados.get("capital", ["N/A"])
+        )
 
-                    emoji = pais_dados.get("flag", "")
+        regiao = pais_dados.get("region", "N/A")
+        subregiao = pais_dados.get("subregion", "N/A")
 
-                    # Exibe resultados
-                    if bandeira:
-                        st.image(bandeira, width=250)
+        populacao = f"{pais_dados.get('population', 0):,}".replace(",", ".")
 
-                    st.markdown(f"## {emoji} {nome}")
-                    st.write(f"**Capital:** {capital}")
-                    st.write(f"**Região:** {regiao}")
-                    st.write(f"**Sub-região:** {subregiao}")
-                    st.write(f"**População:** {populacao} habitantes")
-                    st.write(f"**Área:** {area} km²")
-                    st.write(f"**Moeda(s):** {moedas}")
-                    st.write(f"**Idioma(s):** {idiomas}")
+        area = f"{pais_dados.get('area', 0):,.0f}".replace(",", ".")
 
-                else:
-                    st.error("❌ País não encontrado.")
+        bandeira = pais_dados.get("flags", {}).get("png")
 
-            elif resposta.status_code == 404:
-                st.error("❌ País não encontrado.")
+        # Moedas
+        currencies = pais_dados.get("currencies", {})
 
-            else:
-                st.error("❌ Erro ao consultar a API.")
+        if currencies:
+            moedas = ", ".join(
+                [
+                    f"{info.get('name', codigo)} ({codigo})"
+                    for codigo, info in currencies.items()
+                ]
+            )
+        else:
+            moedas = "N/A"
 
-        except requests.exceptions.Timeout:
-            st.error("⏳ A consulta demorou muito. Tente novamente.")
+        # Idiomas
+        idiomas = ", ".join(
+            pais_dados.get("languages", {}).values()
+        ) or "N/A"
 
-        except requests.exceptions.RequestException as e:
-            st.error(f"❌ Erro de conexão: {e}")
+        # Exibição
+        if bandeira:
+            st.image(bandeira, width=250)
 
-        except Exception as e:
-            st.error(f"❌ Erro inesperado: {e}")
+        st.markdown(f"## {emoji} {nome}")
 
-    else:
-        st.warning("⚠️ Por favor, digite o nome de um país antes de buscar.")
+        st.write(f"**Capital:** {capital}")
+        st.write(f"**Região:** {regiao}")
+        st.write(f"**Sub-região:** {subregiao}")
+        st.write(f"**População:** {populacao} habitantes")
+        st.write(f"**Área:** {area} km²")
+        st.write(f"**Moeda(s):** {moedas}")
+        st.write(f"**Idioma(s):** {idiomas}")
+
+        # Mapa
+        coordenadas = pais_dados.get("latlng", [])
+
+        if len(coordenadas) == 2:
+            st.map(
+                {
+                    "lat": [coordenadas[0]],
+                    "lon": [coordenadas[1]]
+                }
+            )
+
+    except requests.exceptions.Timeout:
+        st.error("⏳ Tempo de conexão esgotado. Tente novamente.")
+
+    except requests.exceptions.RequestException:
+        st.error("❌ Erro ao conectar com a API.")
+
+    except Exception as erro:
+        st.error(f"❌ Erro inesperado: {erro}")
 
 else:
-    st.info("Digite o nome de um país e clique em **Buscar País** para começar.")
+    st.info("Digite o nome de um país e clique em Buscar País.")
+```
