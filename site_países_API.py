@@ -18,7 +18,7 @@ if st.button("🔍 Buscar País"):
         try:
             with st.spinner("Buscando informações..."):
                 resposta = requests.get(
-                    f"https://restcountries.com/v3.1/name/{pais}?fullText=true",
+                    f"https://restcountries.com/v3.1/name/{pais},
                     timeout=10
                 )
 
