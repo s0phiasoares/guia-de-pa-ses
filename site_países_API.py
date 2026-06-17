@@ -114,4 +114,3 @@ if st.button("🔍 Buscar País"):
 
 else:
     st.info("Digite o nome de um país e clique em Buscar País.")
-```
