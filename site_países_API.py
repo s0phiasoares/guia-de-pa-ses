@@ -1,4 +1,3 @@
-
 import streamlit as st
 import requests
 
@@ -9,8 +8,6 @@ st.set_page_config(
 )
 
 chave_api = st.secrets.get("PAIS_API")
-
-
 
 st.title("INFOWORLD 🌍")
 st.subheader("Descubra informações sobre qualquer país 🗺️")
@@ -29,13 +26,10 @@ if st.button("🔍 Buscar País"):
 
     try:
         with st.spinner("Buscando informações..."):
-
             resposta = requests.get(
-            f"https://api.restcountries.com/countries/v5?q={pais}",
-            headers={'Authorization': f"Bearer {chave_api}"}, timeout=10
+                f"https://api.restcountries.com/countries/v5?q={pais}",
+                headers={'Authorization': f"Bearer {chave_api}"}, timeout=10
             )
-
-
 
         if resposta.status_code != 200:
             st.error("❌ País não encontrado.")
@@ -43,46 +37,46 @@ if st.button("🔍 Buscar País"):
 
         dados = resposta.json()
 
-        # Garante que a API retornou uma lista válida
-        if not isinstance(dados, list) or len(dados) == 0:
+        # Garante que a API retornou o dicionário e possui objetos na lista
+        if not isinstance(dados, dict) or "data" not in dados or not dados["data"].get("objects"):
             st.error("❌ País não encontrado.")
             st.stop()
 
-        pais_dados = dados.get("data").get("objects")[0]
+        # Acessa o primeiro item dentro da nova estrutura
+        pais_dados = dados["data"]["objects"][0]
 
-        nome = pais_dados.get("name", {}).get("common", "N/A")
-        emoji = pais_dados.get("flag", "")
+        # Extração de Nome e Emoji
+        nome = pais_dados.get("names", {}).get("common", "N/A")
+        emoji = pais_dados.get("flag", {}).get("emoji", "")
 
-        capital = ", ".join(
-            pais_dados.get("capital", ["N/A"])
-        )
+        # A capital agora é uma lista de dicionários
+        capitais_lista = pais_dados.get("capitals", [])
+        capital = ", ".join([c.get("name", "N/A") for c in capitais_lista]) if capitais_lista else "N/A"
 
         regiao = pais_dados.get("region", "N/A")
         subregiao = pais_dados.get("subregion", "N/A")
 
         populacao = f"{pais_dados.get('population', 0):,}".replace(",", ".")
+        
+        # A área agora é um dicionário contendo kilometers e miles
+        area = f"{pais_dados.get('area', {}).get('kilometers', 0):,.0f}".replace(",", ".")
 
-        area = f"{pais_dados.get('area', 0):,.0f}".replace(",", ".")
+        # A bandeira agora fica dentro do objeto 'flag'
+        bandeira = pais_dados.get("flag", {}).get("url_png")
 
-        bandeira = pais_dados.get("flags", {}).get("png")
-
-        # Moedas
-        currencies = pais_dados.get("currencies", {})
-
+        # Moedas agora são uma lista de dicionários
+        currencies = pais_dados.get("currencies", [])
         if currencies:
-            moedas = ", ".join(
-                [
-                    f"{info.get('name', codigo)} ({codigo})"
-                    for codigo, info in currencies.items()
-                ]
-            )
+            moedas = ", ".join([f"{moeda.get('name', 'N/A')} ({moeda.get('code', '')})" for moeda in currencies])
         else:
             moedas = "N/A"
 
-        # Idiomas
-        idiomas = ", ".join(
-            pais_dados.get("languages", {}).values()
-        ) or "N/A"
+        # Idiomas agora são uma lista de dicionários
+        languages = pais_dados.get("languages", [])
+        if languages:
+            idiomas = ", ".join([lang.get("name", "N/A") for lang in languages])
+        else:
+            idiomas = "N/A"
 
         # Exibição
         if bandeira:
@@ -98,14 +92,17 @@ if st.button("🔍 Buscar País"):
         st.write(f"**Moeda(s):** {moedas}")
         st.write(f"**Idioma(s):** {idiomas}")
 
-        # Mapa
-        coordenadas = pais_dados.get("latlng", [])
+        # Mapa - Coordenadas agora são um dicionário {lat: x, lng: y}
+        coordenadas = pais_dados.get("coordinates", {})
+        lat = coordenadas.get("lat")
+        lng = coordenadas.get("lng")
 
-        if len(coordenadas) == 2:
+        # Verifica se as coordenadas existem antes de plotar no mapa
+        if lat is not None and lng is not None:
             st.map(
                 {
-                    "lat": [coordenadas[0]],
-                    "lon": [coordenadas[1]]
+                    "lat": [lat],
+                    "lon": [lng]
                 }
             )
 
